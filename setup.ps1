@@ -97,8 +97,8 @@ for ($i = 0; $i -lt $maxWait; $i++) {
 
 # 创建数据库和导入数据
 & "$dbDir\bin\mysql.exe" -u root --port=3307 --protocol=tcp -e "CREATE DATABASE IF NOT EXISTS cloudthink DEFAULT CHARSET utf8;"
-& "$dbDir\bin\mysql.exe" -u root --port=3307 --protocol=tcp cloudthink < "$wwwDir\cloudthink.sql" 2>$null
-& "$dbDir\bin\mysql.exe" -u root --port=3307 --protocol=tcp cloudthink < "$wwwDir\sample_data.sql" 2>$null
+Get-Content "$wwwDir\cloudthink.sql" | & "$dbDir\bin\mysql.exe" -u root --port=3307 --protocol=tcp cloudthink 2>$null
+Get-Content "$wwwDir\sample_data.sql" | & "$dbDir\bin\mysql.exe" -u root --port=3307 --protocol=tcp cloudthink 2>$null
 
 Write-Host "  数据库就绪" -ForegroundColor Green
 
