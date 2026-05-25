@@ -2,19 +2,19 @@
 
 ## 一键部署
 
-### 🐳 方案一：Docker（一键部署，推荐）
+### 🚀 方案一：一键启动（推荐，无需任何环境）
 
 ```bash
-# Linux / Mac
+# Linux / Mac - 一行命令
 curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.sh | bash
 ```
 
-```powershell
-# Windows PowerShell（右键以管理员运行）
-powershell -Command "iwr -Uri 'https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.ps1' -UseBasicParsing | iex"
+```
+# Windows - 复制下面一整行到 CMD 回车即可
+curl -sL "https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/start.bat" -o "%TEMP%\start.bat" && "%TEMP%\start.bat"
 ```
 
-> 脚本会自动安装 Docker（如果没有的话），然后启动网站。
+> 脚本会自动下载 PHP + MariaDB + 网站代码，首次约 80MB，后续秒开。
 
 > 脚本会自动安装 Docker（如果没有的话），然后自动部署。
 

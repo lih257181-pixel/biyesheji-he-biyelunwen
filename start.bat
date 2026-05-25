@@ -1,121 +1,183 @@
 @echo off
 chcp 65001 >nul
-title 云创科技企业网站 - 一键部署
+setlocal enabledelayedexpansion
 
+title 云创科技企业网站 - 一键启动
 echo ============================================
-echo    云创科技企业网站 - 一键部署脚本
-echo    适用于 Windows (无需Docker/Git)
+echo    云创科技企业网站 - 一键启动
 echo ============================================
 echo.
-echo 本脚本将自动检测并启动：
-echo   1. PHP 内置开发服务器
-echo   2. MySQL / MariaDB 数据库
+
+set "WORK_DIR=%TEMP%\cloudthink_site"
+set "PHP_DIR=%WORK_DIR%\runtime\php"
+set "DB_DIR=%WORK_DIR%\runtime\mariadb"
+set "DATA_DIR=%DB_DIR%\data"
+set "WWW_DIR=%WORK_DIR%\www"
+set "PORT=8080"
+
+:: 清理残留进程
+taskkill /f /im php.exe >nul 2>nul
+taskkill /f /im mariadbd.exe >nul 2>nul
+taskkill /f /im mysqld.exe >nul 2>nul
+ping 127.0.0.1 -n 2 >nul
+
+:: 检测是否已有缓存
+if exist "%PHP_DIR%\php.exe" if exist "%DB_DIR%\bin\mariadbd.exe" (
+    echo [1/3] 运行环境已就绪
+    goto init_db
+)
+
+echo [1/3] 首次运行，正在下载依赖（约 80MB）...
 echo.
 
-:: 获取当前目录
-set "ROOT=%~dp0"
-set "ROOT=%ROOT:~0,-1%"
+:: 清理旧文件
+if exist "%WORK_DIR%" rmdir /s /q "%WORK_DIR%"
+mkdir "%WORK_DIR%\runtime" 2>nul
 
-:: 检查 PHP
-echo [1/3] 检测 PHP 环境...
-where php >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo   未检测到 PHP，正在下载便携版 PHP...
-    if not exist "%ROOT%\tools\php" mkdir "%ROOT%\tools\php"
-    powershell -Command "Invoke-WebRequest -Uri 'https://windows.php.net/downloads/releases/php-8.1.29-Win32-vs16-x64.zip' -OutFile '%ROOT%\tools\php.zip'"
-    powershell -Command "Expand-Archive -Path '%ROOT%\tools\php.zip' -DestinationPath '%ROOT%\tools\php' -Force"
-    del "%ROOT%\tools\php.zip"
-    echo   PHP 下载完成
+:: 下载 PHP
+echo   下载 PHP...
+powershell -Command "Invoke-WebRequest -Uri 'https://windows.php.net/downloads/releases/php-8.1.29-nts-Win32-vs16-x64.zip' -UseBasicParsing -OutFile '%TEMP%\php.zip'"
+if not exist "%TEMP%\php.zip" (
+    echo   下载 PHP 失败，请检查网络连接
+    pause
+    exit /b 1
 )
-set "PHP_PATH=%ROOT%\tools\php\php.exe"
-if not exist "%PHP_PATH%" (
-    where php >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        set "PHP_PATH=php"
-    ) else (
-        echo   错误：找不到 PHP，请手动安装 https://windows.php.net/download/
-        pause
-        exit /b 1
+powershell -Command "Expand-Archive -Path '%TEMP%\php.zip' -DestinationPath '%PHP_DIR%' -Force"
+del "%TEMP%\php.zip" 2>nul
+
+:: 下载 MariaDB
+echo   下载 MariaDB...
+powershell -Command "Invoke-WebRequest -Uri 'https://archive.mariadb.org/mariadb-10.11.8/winx64-packages/mariadb-10.11.8-winx64.zip' -UseBasicParsing -OutFile '%TEMP%\mariadb.zip'"
+if not exist "%TEMP%\mariadb.zip" (
+    echo   下载 MariaDB 失败，请检查网络连接
+    pause
+    exit /b 1
+)
+powershell -Command "Expand-Archive -Path '%TEMP%\mariadb.zip' -DestinationPath '%WORK_DIR%\runtime' -Force"
+del "%TEMP%\mariadb.zip" 2>nul
+
+:: 移动 MariaDB 文件
+for /d %%i in ("%WORK_DIR%\runtime\mariadb*") do (
+    if exist "%%i\bin\mariadbd.exe" (
+        move "%%i\*" "%DB_DIR%\" >nul 2>nul
+        rmdir /s /q "%%i" 2>nul
     )
 )
-echo   PHP 就绪：%PHP_PATH%
-
-:: 检查 MySQL
-echo [2/3] 检测 MySQL 环境...
-where mysql >nul 2>&1
-set "MYSQL_EXISTS=%ERRORLEVEL%"
-
-where mariadb >nul 2>&1
-set "MARIADB_EXISTS=%ERRORLEVEL%"
-
-if %MYSQL_EXISTS% NEQ 0 if %MARIADB_EXISTS% NEQ 0 (
-    echo   未检测到 MySQL，正在下载便携版 MariaDB...
-    if not exist "%ROOT%\tools\mariadb" mkdir "%ROOT%\tools\mariadb"
-    powershell -Command "Invoke-WebRequest -Uri 'https://archive.mariadb.org/mariadb-10.11.8/winx64-packages/mariadb-10.11.8-winx64.zip' -OutFile '%ROOT%\tools\mariadb.zip'"
-    powershell -Command "Expand-Archive -Path '%ROOT%\tools\mariadb.zip' -DestinationPath '%ROOT%\tools\mariadb' -Force"
-    del "%ROOT%\tools\mariadb.zip"
-    :: 移动文件到正确位置
-    for /d %%i in ("%ROOT%\tools\mariadb\*") do (
-        if exist "%%i\bin\mysqld.exe" (
-            move "%%i\*" "%ROOT%\tools\mariadb\" >nul
-        )
-    )
-    echo   MariaDB 下载完成
+if not exist "%DB_DIR%\bin\mariadbd.exe" (
+    echo   解压 MariaDB 失败
+    pause
+    exit /b 1
 )
 
-set "MYSQL_PATH=%ROOT%\tools\mariadb\bin\mysql.exe"
-if not exist "%MYSQL_PATH%" (
-    where mysql >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        set "MYSQL_PATH=mysql"
-        set "MYSQLADMIN_PATH=mysqladmin"
-    ) else (
-        echo   错误：找不到 MySQL，跳过数据库初始化
-        echo   请确保已安装 MySQL 并手动导入 cloudthink.sql
-        pause
-        exit /b 1
-    )
-) else (
-    set "MYSQLADMIN_PATH=%ROOT%\tools\mariadb\bin\mysqladmin.exe"
+:: 下载网站代码
+echo   下载网站代码...
+powershell -Command "Invoke-WebRequest -Uri 'https://github.com/lih257181-pixel/biyesheji-he-biyelunwen/archive/refs/heads/master.zip' -UseBasicParsing -OutFile '%TEMP%\site.zip'"
+if not exist "%TEMP%\site.zip" (
+    echo   下载网站代码失败
+    pause
+    exit /b 1
 )
-echo   MySQL 就绪
+powershell -Command "Expand-Archive -Path '%TEMP%\site.zip' -DestinationPath '%WORK_DIR%\site_tmp' -Force"
+del "%TEMP%\site.zip" 2>nul
 
-:: 初始化数据库
-echo [3/3] 初始化数据库...
-:: 先尝试连接已有数据库 - 用root无密码或123456
-"%MYSQL_PATH%" -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS cloudthink DEFAULT CHARSET utf8;" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    "%MYSQL_PATH%" -u root -p -e "CREATE DATABASE IF NOT EXISTS cloudthink DEFAULT CHARSET utf8;" 2>nul
-    if %ERRORLEVEL% NEQ 0 (
-        "%MYSQL_PATH%" -u root -e "CREATE DATABASE IF NOT EXISTS cloudthink DEFAULT CHARSET utf8;" 2>nul
-    )
+:: 找解压出来的目录
+for /d %%i in ("%WORK_DIR%\site_tmp\*") do (
+    xcopy /e /q /y "%%i\*" "%WWW_DIR%\" >nul
+)
+rmdir /s /q "%WORK_DIR%\site_tmp" 2>nul
+
+:: 配置 php.ini
+if exist "%PHP_DIR%\php.ini-development" (
+    copy /y "%PHP_DIR%\php.ini-development" "%PHP_DIR%\php.ini" >nul
+)
+if exist "%PHP_DIR%\php.ini" (
+    powershell -Command "$f='%PHP_DIR%\php.ini';$c=Get-Content $f;$c=$c-replace ';extension_dir=\"ext\"','extension_dir=\"ext\"';$c=$c-replace ';extension=mysqli','extension=mysqli';$c=$c-replace ';extension=mbstring','extension=mbstring';$c=$c-replace ';extension=openssl','extension=openssl';Set-Content $f $c"
 )
 
-:: 导入 SQL
-"%MYSQL_PATH%" -u root -p123456 cloudthink < "%ROOT%\cloudthink.sql" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    "%MYSQL_PATH%" -u root cloudthink < "%ROOT%\cloudthink.sql" 2>nul
+echo   下载完成
+
+:init_db
+echo [2/3] 初始化数据库...
+
+:: 首次初始化 data 目录
+if not exist "%DATA_DIR%\mysql" (
+    echo   首次初始化数据库...
+    "%DB_DIR%\bin\mariadbd.exe" --initialize-insecure --datadir="%DATA_DIR%" >nul 2>nul
+    ping 127.0.0.1 -n 3 >nul
 )
-"%MYSQL_PATH%" -u root -p123456 cloudthink < "%ROOT%\sample_data.sql" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    "%MYSQL_PATH%" -u root cloudthink < "%ROOT%\sample_data.sql" 2>nul
-)
-echo   数据库初始化完成
+
+:: 停止可能的残留进程
+taskkill /f /im mariadbd.exe >nul 2>nul
+taskkill /f /im mysqld.exe >nul 2>nul
+ping 127.0.0.1 -n 2 >nul
+
+:: 启动 MariaDB
+echo   启动数据库...
+start /B "" "%DB_DIR%\bin\mariadbd.exe" --datadir="%DATA_DIR%" --port=3307 --skip-grant-tables
+ping 127.0.0.1 -n 5 >nul
+
+:: 创建数据库和导入数据
+"%DB_DIR%\bin\mysql.exe" -u root --port=3307 --protocol=tcp -e "CREATE DATABASE IF NOT EXISTS cloudthink DEFAULT CHARSET utf8;" 2>nul
+"%DB_DIR%\bin\mysql.exe" -u root --port=3307 --protocol=tcp cloudthink -e "source %WWW_DIR%\cloudthink.sql" 2>nul
+"%DB_DIR%\bin\mysql.exe" -u root --port=3307 --protocol=tcp cloudthink -e "source %WWW_DIR%\sample_data.sql" 2>nul
+
+echo   数据库就绪
+
+:: 生成 db.php 配置
+echo [3/3] 启动网站...
+(
+echo ^<?php
+echo $db_host = '127.0.0.1';
+echo $db_port = 3307;
+echo $db_user = 'root';
+echo $db_pass = '';
+echo $db_name = 'cloudthink';
+echo $conn = mysqli_connect^(^$db_host, ^$db_user, ^$db_pass, ^$db_name, ^$db_port^);
+echo if ^(!^$conn^) die^('数据库连接失败'^);
+echo mysqli_query^(^$conn, 'set names utf8'^);
+echo session_start^(^);
+) > "%WWW_DIR%\db.php"
+
+(
+echo ^<?php
+echo $db_host = '127.0.0.1';
+echo $db_port = 3307;
+echo $db_user = 'root';
+echo $db_pass = '';
+echo $db_name = 'cloudthink';
+echo $conn = mysqli_connect^(^$db_host, ^$db_user, ^$db_pass, ^$db_name, ^$db_port^);
+echo if ^(!^$conn^) die^('数据库连接失败'^);
+echo mysqli_query^(^$conn, 'set names utf8'^);
+echo session_start^(^);
+echo if ^(!isset^(^$_SESSION['admin']^)^^) {
+echo     echo "<script>alert('请先登录');window.location.href='index.php';</script>";
+echo     exit;
+echo }
+) > "%WWW_DIR%\admin\db.php"
+
+:: 停止旧 PHP 进程
+taskkill /f /im php.exe >nul 2>nul
+ping 127.0.0.1 -n 2 >nul
 
 :: 启动 PHP 内置服务器
+start /B "" "%PHP_DIR%\php.exe" -S 0.0.0.0:%PORT% -t "%WWW_DIR%"
+ping 127.0.0.1 -n 2 >nul
+
+:success
 echo.
 echo ============================================
-echo    部署完成！
+echo    网站已启动！
 echo.
-echo    前台访问：http://localhost:8080/
-echo    后台访问：http://localhost:8080/admin/
-echo    管理员账号：admin  /  admin123
+echo    前台: http://localhost:%PORT%/
+echo    后台: http://localhost:%PORT%/admin/
+echo    管理员: admin / admin123
 echo.
-echo    按 Ctrl+C 停止服务
+echo    按任意键停止服务
 echo ============================================
-echo.
 
-cd /d "%ROOT%"
-"%PHP_PATH%" -S 0.0.0.0:8080 -t "%ROOT%"
+start http://localhost:%PORT%/
+pause >nul
 
-pause
+:: 停止服务
+taskkill /f /im php.exe >nul 2>nul
+taskkill /f /im mariadbd.exe >nul 2>nul
