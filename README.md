@@ -35,6 +35,20 @@ curl -sSL https://github.com/lih257181-pixel/biyesheji-he-biyelunwen/archive/ref
 php -S 0.0.0.0:8080
 ```
 
+### 🗑️ 清除（删除所有数据）
+
+```bash
+# Linux / Mac
+curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/cleanup.sh | bash
+```
+
+```powershell
+# Windows PowerShell（管理员）
+powershell -Command "iwr -Uri 'https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/cleanup.bat' -UseBasicParsing | iex"
+```
+
+> 或在项目目录双击 `cleanup.bat`，会停止容器并删除所有数据。
+
 ## 访问地址
 
 | 页面 | 地址 |
