@@ -2,14 +2,19 @@
 
 ## 一键部署
 
-### 🐳 方案一：Docker（推荐）
+### 🐳 方案一：Docker（一键部署，推荐）
 
 ```bash
-# 进入项目目录
-cd biyesheji-he-biyelunwen
-# 双击 setup.bat (Windows) 或运行：
-docker compose up -d
+# Linux / Mac
+curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.sh | bash
 ```
+
+```powershell
+# Windows PowerShell（右键以管理员运行）
+Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.bat" -UseBasicParsing).Content
+```
+
+> 脚本会自动安装 Docker（如果没有的话），然后启动网站。
 
 > 脚本会自动安装 Docker（如果没有的话），然后自动部署。
 
