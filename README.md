@@ -10,9 +10,14 @@ curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelun
 ```
 
 ```cmd
-:: Windows（复制到 CMD 回车，绕过 CDN 缓存）
-powershell -Command "$f='%TEMP%\start.bat';$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/start.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII;& $f"
+:: Windows - 第一步：下载脚本（CMD 里运行）
+powershell -Command "$f=\"$env:TEMP\start.bat\";$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/start.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII"
+
+:: 第二步：运行脚本（CMD 里运行）
+"%TEMP%\start.bat"
 ```
+
+> 两步都贴到 CMD 里回车即可，首次约 80MB，后续秒开。
 
 > 脚本会自动下载 PHP + MariaDB + 网站代码（首次约 80MB），后续秒开。
 
@@ -41,8 +46,11 @@ curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelun
 ```
 
 ```cmd
-:: Windows（CMD）
-powershell -Command "$f='%TEMP%\cleanup.bat';$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/cleanup.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII;& $f"
+:: Windows - 第一步：下载清除脚本
+powershell -Command "$f=\"$env:TEMP\cleanup.bat\";$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/cleanup.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII"
+
+:: 第二步：运行清除脚本
+"%TEMP%\cleanup.bat"
 ```
 
 > 或在项目目录双击 `cleanup.bat`，会停止容器并删除所有数据。
