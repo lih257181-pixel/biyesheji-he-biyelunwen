@@ -11,7 +11,7 @@ curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelun
 
 ```powershell
 # Windows PowerShell（右键以管理员运行）
-Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.bat" -UseBasicParsing).Content
+powershell -Command "iwr -Uri 'https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.ps1' -UseBasicParsing | iex"
 ```
 
 > 脚本会自动安装 Docker（如果没有的话），然后启动网站。
