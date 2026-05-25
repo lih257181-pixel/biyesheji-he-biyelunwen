@@ -10,9 +10,13 @@ curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelun
 ```
 
 ```powershell
-# Windows PowerShell
-Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.bat" -UseBasicParsing).Content
+# Windows PowerShell（把 YOUR_TOKEN 换成你的 GitHub token）
+$token="YOUR_TOKEN"
+$url="https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.bat"
+Invoke-Expression ((Invoke-WebRequest -Uri $url -Headers @{"Authorization"="token $token"} -UseBasicParsing).Content)
 ```
+
+> 不想输 token？直接把仓库下载 ZIP 解压，双击 `setup.bat` 即可。
 
 > 脚本会自动安装 Docker（如果没有的话），然后自动部署。
 
