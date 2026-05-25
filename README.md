@@ -10,16 +10,19 @@ curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelun
 ```
 
 ```cmd
-:: Windows - 第一步：下载脚本（CMD 里运行）
+:: Windows（复制下面三行，逐行粘贴到 CMD 回车）
+
+:: 第1步：删除旧缓存
+del /f /q "%TEMP%\start.bat" 2>nul
+
+:: 第2步：下载脚本（不走CDN缓存）
 powershell -Command "$f=\"$env:TEMP\start.bat\";$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/start.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII"
 
-:: 第二步：运行脚本（CMD 里运行）
+:: 第3步：运行
 "%TEMP%\start.bat"
 ```
 
-> 两步都贴到 CMD 里回车即可，首次约 80MB，后续秒开。
-
-> 脚本会自动下载 PHP + MariaDB + 网站代码（首次约 80MB），后续秒开。
+> 首次运行会下载 PHP + MariaDB + 网站代码（约 80MB），后续秒开。
 
 ### 🚀 方案二：手动 Docker 部署
 
