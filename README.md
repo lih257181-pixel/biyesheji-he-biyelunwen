@@ -2,21 +2,19 @@
 
 ## 一键部署
 
-### 🚀 方案一：一键启动（推荐，无需任何环境）
+### 🚀 一键启动（推荐，无需任何环境）
 
 ```bash
-# Linux / Mac - 一行命令
+# Linux / Mac
 curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.sh | bash
 ```
 
-```
-# Windows - 复制下面一整行到 CMD 回车即可
-curl -sL "https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/start.bat" -o "%TEMP%\start.bat" && "%TEMP%\start.bat"
+```cmd
+:: Windows（复制到 CMD 回车，绕过 CDN 缓存）
+powershell -Command "$f='%TEMP%\start.bat';$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/start.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII;& $f"
 ```
 
-> 脚本会自动下载 PHP + MariaDB + 网站代码，首次约 80MB，后续秒开。
-
-> 脚本会自动安装 Docker（如果没有的话），然后自动部署。
+> 脚本会自动下载 PHP + MariaDB + 网站代码（首次约 80MB），后续秒开。
 
 ### 🚀 方案二：手动 Docker 部署
 
@@ -42,9 +40,9 @@ php -S 0.0.0.0:8080
 curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/cleanup.sh | bash
 ```
 
-```powershell
-# Windows PowerShell（管理员）
-powershell -Command "iwr -Uri 'https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/cleanup.bat' -UseBasicParsing | iex"
+```cmd
+:: Windows（CMD）
+powershell -Command "$f='%TEMP%\cleanup.bat';$h=@{};$h['Accept']='application/vnd.github.v3.raw';$c=(Invoke-WebRequest -Uri 'https://api.github.com/repos/lih257181-pixel/biyesheji-he-biyelunwen/contents/cleanup.bat' -Headers $h -UseBasicParsing).Content;Set-Content -Path $f -Value $c -Encoding ASCII;& $f"
 ```
 
 > 或在项目目录双击 `cleanup.bat`，会停止容器并删除所有数据。
@@ -90,6 +88,6 @@ cloudthink/
 ├── Dockerfile         # Docker 构建文件
 ├── docker-compose.yml # Docker 编排文件
 ├── setup.sh           # Linux/Mac 一键部署
-├── setup.bat          # Windows 一键部署
+├── start.bat          # Windows 一键启动
 └── install.php        # 在线安装向导
 ```
