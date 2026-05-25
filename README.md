@@ -2,21 +2,14 @@
 
 ## 一键部署
 
-### 🐳 方案一：Docker（推荐，无需任何环境）
+### 🐳 方案一：Docker（推荐）
 
 ```bash
-# Linux / Mac
-curl -sSL https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.sh | bash
+# 进入项目目录
+cd biyesheji-he-biyelunwen
+# 双击 setup.bat (Windows) 或运行：
+docker compose up -d
 ```
-
-```powershell
-# Windows PowerShell（把 YOUR_TOKEN 换成你的 GitHub token）
-$token="YOUR_TOKEN"
-$url="https://raw.githubusercontent.com/lih257181-pixel/biyesheji-he-biyelunwen/master/setup.bat"
-Invoke-Expression ((Invoke-WebRequest -Uri $url -Headers @{"Authorization"="token $token"} -UseBasicParsing).Content)
-```
-
-> 不想输 token？直接把仓库下载 ZIP 解压，双击 `setup.bat` 即可。
 
 > 脚本会自动安装 Docker（如果没有的话），然后自动部署。
 
