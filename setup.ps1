@@ -6,7 +6,7 @@ $dataDir = "$dbDir\data"
 $wwwDir = "$workDir\www"
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  云创科技企业网站 - 一键启动" -ForegroundColor Cyan
+Write-Host "  云创科技企业网站 - 一键启动 v2" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
